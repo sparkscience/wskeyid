@@ -1,12 +1,16 @@
 package main
 
 import (
+	// "encoding/json"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	// "strings"
+	// "time"
 
 	mathrand "math/rand"
 
@@ -16,6 +20,9 @@ import (
 	"github.com/shovon/go/wskeyid/messages/clientmessage"
 	"github.com/shovon/go/wskeyid/messages/servermessages"
 	"github.com/shovon/gorillawswrapper"
+	// "github.com/shovon/go/wskeyid/messages/clientmessage"
+	// "github.com/shovon/go/wskeyid/messages/servermessages"
+	// "github.com/shovon/gorillawswrapper"
 )
 
 var upgrader = websocket.Upgrader{
@@ -50,29 +57,45 @@ func main() {
 		}
 		defer c.Close()
 
+		conn := gorillawswrapper.NewWrapper(c)
+
 		{
-			err := wskeyid.HandleAuthConnection(r, c)
+			err := wskeyid.HandleAuthConnection(r, conn)
 			if err != nil {
 				return
 			}
 		}
 
-		conn := gorillawswrapper.NewWrapper(c)
+		fmt.Println("Connected")
+
+		go func() {
+			for {
+				conn.WriteJSON(map[string]interface{}{"Type": "COOL"})
+				<-time.After(time.Second * time.Duration(randInt(10)))
+			}
+		}()
+
 		defer conn.Stop()
 
 		clientId := strings.TrimSpace(r.URL.Query().Get("client_id"))
 
+		fmt.Printf("Connected to client with ID %s\n", clientId)
+
 		go func() {
 			for !conn.HasStopped() {
-				<-time.After(time.Second * time.Duration(randInt(10)))
+				fmt.Printf("Has stopped %t\n", conn.HasStopped())
 				err := conn.WriteJSON(servermessages.Message{Type: "TEXT_MESSAGE", Data: "Cool"})
+				fmt.Println("Sending message")
 				if err != nil {
+					fmt.Fprintf(os.Stderr, "Got error %s", err.Error())
 					return
 				}
+				<-time.After(time.Second * time.Duration(randInt(10)))
 			}
 		}()
 
 		for msg := range conn.MessagesChannel() {
+			fmt.Printf("Got message")
 			var m clientmessage.Message
 			json.Unmarshal(msg.Message, &m)
 			if m.Type != "TEXT_MESSAGE" {
@@ -88,7 +111,7 @@ func main() {
 			}
 		}
 
-		fmt.Println("Client closed the connection. Ending the connection")
+		fmt.Println("Message stream ended between client and server. Closing connection")
 	})
 
 	fmt.Println("Server listening on port 8000")

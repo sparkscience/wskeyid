@@ -134,9 +134,7 @@
 
 			async function getClientId(publicKey) {
 				const raw = await crypto.subtle.exportKey("raw", publicKey);
-				const prefix = new Uint8Array([0x0, 0x1]);
-				const clientIdBuf = concatBuffers(prefix, raw);
-				return encodeBase64(clientIdBuf);
+				return `WebCrypto-raw.EC.P-256$${encodeBase64(raw)}`;
 			}
 
 			class EventEmitter {

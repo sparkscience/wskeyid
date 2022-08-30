@@ -13,7 +13,6 @@ import (
 	"github.com/shovon/go/wskeyid/messages/clientmessage"
 	"github.com/shovon/go/wskeyid/messages/servermessages"
 
-	"github.com/gorilla/websocket"
 	"github.com/shovon/gorillawswrapper"
 )
 
@@ -78,10 +77,7 @@ func verifySignature(key *ecdsa.PublicKey, pt, sig []byte) bool {
 	return ecdsa.Verify(key, hash[:], r, s)
 }
 
-func HandleAuthConnection(r *http.Request, c *websocket.Conn) error {
-	conn := gorillawswrapper.NewWrapper(c)
-	defer conn.Stop()
-
+func HandleAuthConnection(r *http.Request, conn gorillawswrapper.Wrapper) error {
 	// Grab the client ID
 	// TODO: perhaps soft-code the query parameter name for grabbing the client_id
 	clientId := strings.TrimSpace(r.URL.Query().Get("client_id"))
