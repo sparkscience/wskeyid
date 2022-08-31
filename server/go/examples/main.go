@@ -1,18 +1,13 @@
 package main
 
 import (
-	// "encoding/json"
 	"encoding/json"
 	"fmt"
+	mathrand "math/rand"
 	"net/http"
 	"os"
 	"strings"
 	"time"
-
-	// "strings"
-	// "time"
-
-	mathrand "math/rand"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -20,9 +15,6 @@ import (
 	"github.com/shovon/go/wskeyid/messages/clientmessage"
 	"github.com/shovon/go/wskeyid/messages/servermessages"
 	"github.com/shovon/gorillawswrapper"
-	// "github.com/shovon/go/wskeyid/messages/clientmessage"
-	// "github.com/shovon/go/wskeyid/messages/servermessages"
-	// "github.com/shovon/gorillawswrapper"
 )
 
 var upgrader = websocket.Upgrader{
